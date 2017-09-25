@@ -1,23 +1,22 @@
+
 //als je iets terug wilt zien van je programma gebruik je Serial.println('Hier is je bericht');
 //Berekeningen worden in CM gemaakt
 //
 
-int inputR = 80; //this is a temporary testing variable resembles the pi's input for rotation(in degrees).
-int input = 80; //this is a temporary testing variable resembles the pi's input going forward(in cm).
 #include <AccelStepper.h>
 
 AccelStepper stepper1(AccelStepper::HALF4WIRE, A0, A2, A1, A3); // motor links
 AccelStepper stepper2(AccelStepper::HALF4WIRE, 6, 7, 8, 9);     // motor rechts
 
-const int Pi = 3.14159265359; // pi tot in een paar digids
+const float Pi = 3.14159265359; // pi tot in een paar digids
 
 //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
 // defines pins numbers
 const int trigPin = 4;
 const int echoPin = 5;
 // defines variables
-long duration;
-int distance;
+long duration;   //both for the distance sensor
+int distance;    //both for the distance sensor
 //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
 
 int error = false;
@@ -29,13 +28,12 @@ int error = false;
   const int stappenPerRotatie = 4096; // aantal stappen in halfstep dat nodig is om een volledig rondje te maken (nog aanpassen als het 4096 is);
   const int gradenNaarStappen = stappenPerRotatie/360; //het omrekenen van graden naar stappen, dus 180graden*gradenNaarStappen=2048 als stappenPerRotatie 4096 is;
   const int stappenNaarGraden = 360/stappenPerRotatie; // het omrekenen van stappen naar graden, gebruiken voor doorgeven aan pi hoeveel stappen er zijn gezet
-  const int 
 // const int's van de auto
 
-// int's vam de auto
+// int's van de auto
  
 
-// int's vam de auto
+// int's van de auto
 
 
 void setup() {
@@ -60,9 +58,12 @@ void setup() {
 
 void loop() {
 // put your main code here, to run repeatedly:
-  rotation(input);
+  int inputR = 80; //this is a temporary testing variable resembles the pi's input for rotation(in degrees).
+  int input = 80; //this is a temporary testing variable resembles the pi's input going forward(in cm).
   while(!Serial.available()){}
-  Serial.readString();
+  inputR = Serial.readString().toInt();
+  rotation(inputR); // aanroepen rotation
+  //drive(input); // aanroepen rechtdoor rijden
   //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
    // Clears the trigPin
     digitalWrite(trigPin, LOW);
@@ -76,8 +77,8 @@ void loop() {
    // Calculating the distance
     distance= duration*0.034/2;
    // Prints the distance on the Serial Monitor
-    Serial.print("Distance: ");
-    Serial.println(distance);
+    //Serial.print("Distance: ");   commented for testing purpouses
+    //Serial.println(distance);
   //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
 
 
@@ -90,26 +91,24 @@ void loop() {
 // rotate functie opzet;
 
 void rotation(int graden){
-  if(error){
-    // als error laat hem niks doen
-    return;
-  }
- stepper1.move( round(inputR * gradenNaarStappen) ); // het draaien van de linker stappenmotor tijdens het draaien
- stepper2.move( round(inputR * -gradenNaarStappen) ); // het draaien van de rechter stappenmotor tijdens het draaien
- //nog doorgeven dat het is uitgevoerd
-  return  Serial.println(  round(inputR*gradenNaarStappen) * stappenNaarGraden  ); // aan de pi laten weten hoeveel graden hij is gedraaid
+  //if (error) return; // als error laat hem niks doen
+  Serial.println(graden);
+  stepper1.move( round(graden * gradenNaarStappen) ); // het draaien van de linker stappenmotor tijdens het draaien
+  stepper2.move( round(graden * -gradenNaarStappen) ); // het draaien van de rechter stappenmotor tijdens het draaien
+  //nog doorgeven dat het is uitgevoerd
+  Serial.println(  round(graden*gradenNaarStappen) * stappenNaarGraden  ); // aan de pi laten weten hoeveel graden hij is gedraaid
 }
 
-void drive (){
+void drive (int afstand){
  if(error){
   // als error laat hem niks doen
     return;
     
-    stepper1.move( round(input * bandRadius) ); // het draaien van de linker stappenmotor klopt nog niet test
-    stepper2.move( round(input * bandradius) ); // het draaien van de rechter stappenmotor
+    stepper1.move( round(afstand / bandRadius * stappenPerRotatie) ); // het draaien van de linker stappenmotor klopt nog niet test
+    stepper2.move( round(afstand / bandRadius * stappenPerRotatie) ); // het draaien van de rechter stappenmotor
   
 
-    return Serial.println(  round(input*bandRadius) * stappenNaarGraden  ); // aan de pi doorgeven hoeveel hij is 
+    return Serial.println(  round(afstand / bandRadius * stappenPerRotatie)   ); // aan de pi doorgeven hoeveel hij is gereden nog niet af test
   }
 
 
@@ -117,7 +116,10 @@ void drive (){
 
   return;
 }
-  
+
+
+
+
 
 
 

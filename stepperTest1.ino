@@ -1,22 +1,31 @@
-
 //als je iets terug wilt zien van je programma gebruik je Serial.println('Hier is je bericht');
 //Berekeningen worden in CM gemaakt
 //
 
+int inputR = 80; //this is a temporary testing variable resembles the pi's input for rotation(in degrees).
+int input = 80; //this is a temporary testing variable resembles the pi's input going forward(in cm).
 #include <AccelStepper.h>
 
 AccelStepper stepper1(AccelStepper::HALF4WIRE, A0, A2, A1, A3); // motor links
 AccelStepper stepper2(AccelStepper::HALF4WIRE, 6, 7, 8, 9);     // motor rechts
 
-const float Pi = 3.14159265359; // pi tot in een paar digids
+const int Pi = 3.14159265359; // pi tot in een paar digids
 
 //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
 // defines pins numbers
-const int trigPin = 4;
-const int echoPin = 5;
+const int trigPinLinks = 2;
+const int echoPinLinks = 3;
+const int trigPinVoor = 4;
+const int echoPinVoor = 5;
+const int trigPinRechts = 6;
+const int echoPinRechts = 7;
 // defines variables
-long duration;   //both for the distance sensor
-int distance;    //both for the distance sensor
+long durationLinks;
+int distanceLinks;
+long durationVoor;
+int distanceVoor;
+long durationRechts;
+int distanceRechts;
 //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
 
 int error = false;
@@ -30,10 +39,10 @@ int error = false;
   const int stappenNaarGraden = 360/stappenPerRotatie; // het omrekenen van stappen naar graden, gebruiken voor doorgeven aan pi hoeveel stappen er zijn gezet
 // const int's van de auto
 
-// int's van de auto
+// int's vam de auto
  
 
-// int's van de auto
+// int's vam de auto
 
 
 void setup() {
@@ -41,15 +50,18 @@ void setup() {
   
     //setup stepper
       Serial.begin(9600);
-      stepper1.setMaxSpeed(1000); // motor links
-      stepper2.setMaxSpeed(1000); // motor rechts
+      stepper1.setMaxSpeed(1000); // motor links max stappen per sec
+      stepper2.setMaxSpeed(1000); // motor rechts max stappen per sec
      //setup stepper
 
   //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
   //setup afsandsensor
-    pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
-    pinMode(echoPin, INPUT); // Sets the echoPin as an Input
-    Serial.begin(9600); // Starts the serial communication
+    pinMode(trigPinLinks, OUTPUT); // Sets the trigPinLinks as an Output
+    pinMode(echoPinLinks, INPUT); // Sets the echoPinLinks as an Input
+    pinMode(trigPinVoor, OUTPUT); // Sets the trigPinVoor as an Output
+    pinMode(echoPinVoor, INPUT); // Sets the echoPinVoor as an Input
+    pinMode(trigPinRechts, OUTPUT); // Sets the trigPinRechts as an Output
+    pinMode(echoPinRechts, INPUT); // Sets the echoPinRechts as an Input
   //setup afsandsensor
   //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
   
@@ -58,27 +70,60 @@ void setup() {
 
 void loop() {
 // put your main code here, to run repeatedly:
-  int inputR = 80; //this is a temporary testing variable resembles the pi's input for rotation(in degrees).
-  int input = 80; //this is a temporary testing variable resembles the pi's input going forward(in cm).
   while(!Serial.available()){}
-  inputR = Serial.readString().toInt();
-  rotation(inputR); // aanroepen rotation
-  //drive(input); // aanroepen rechtdoor rijden
+  Serial.readString();
   //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
-   // Clears the trigPin
-    digitalWrite(trigPin, LOW);
+   // Clears the trigPinLinks
+    digitalWrite(trigPinLinks, LOW);
     delayMicroseconds(2);
-   // Sets the trigPin on HIGH state for 10 micro seconds
-    digitalWrite(trigPin, HIGH);
+   // Sets the trigPinLinks on HIGH state for 10 micro seconds
+    digitalWrite(trigPinLinks, HIGH);
     delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
-   // Reads the echoPin, returns the sound wave travel time in microseconds
-    duration = pulseIn(echoPin, HIGH);
+    digitalWrite(trigPinLinks, LOW);
+   // Reads the echoPinLinks, returns the sound wave travel time in microseconds
+    durationLinks = pulseIn(echoPinLinks, HIGH);
    // Calculating the distance
-    distance= duration*0.034/2;
+    distanceLinks= durationLinks*0.034/2;
+    
+    // Clears the trigPinVoor
+    digitalWrite(trigPinVoor, LOW);
+    delayMicroseconds(2);
+   // Sets the trigPinVoor on HIGH state for 10 micro seconds
+    digitalWrite(trigPinVoor, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPinVoor, LOW);
+   // Reads the echoPinVoor, returns the sound wave travel time in microseconds
+    durationVoor = pulseIn(echoPinVoor, HIGH);
+   // Calculating the distance
+    distanceVoor= durationVoor*0.034/2;
+    
+    // Clears the trigPinRechts
+    digitalWrite(trigPinRechts, LOW);
+    delayMicroseconds(2);
+   // Sets the trigPinRechts on HIGH state for 10 micro seconds
+    digitalWrite(trigPinRechts, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPinRechts, LOW);
+   // Reads the echoPin, returns the sound wave travel time in microseconds
+    durationRechts = pulseIn(echoPinRechts, HIGH);
+   // Calculating the distance
+    distanceRechts= durationRechts*0.034/2;
+
+    if (distanceVoor < 2){ // als de afstand kleiner is dan 2 cm dan moet het stoppen dat moet ik nog testen
+    // hier moet ik er voor zorgen dat de loop stopt en dat hij een ander pad gaat kiezen
+    // wat is het handigst hier switch met cases of while??????
+    switch(){
+      case ;
+    }
+    while(distanceRechts < 2, distanceLinks < 2 ){
+     stepper1.move(-10);
+     stepper2.move(-10);
+    }
+    }
+    }
+   
    // Prints the distance on the Serial Monitor
-    //Serial.print("Distance: ");   commented for testing purpouses
-    //Serial.println(distance);
+    Serial.print("Distance: ");
   //http://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/
 
 
@@ -91,35 +136,32 @@ void loop() {
 // rotate functie opzet;
 
 void rotation(int graden){
-  //if (error) return; // als error laat hem niks doen
-  Serial.println(graden);
-  stepper1.move( round(graden * gradenNaarStappen) ); // het draaien van de linker stappenmotor tijdens het draaien
-  stepper2.move( round(graden * -gradenNaarStappen) ); // het draaien van de rechter stappenmotor tijdens het draaien
-  //nog doorgeven dat het is uitgevoerd
-  Serial.println(  round(graden*gradenNaarStappen) * stappenNaarGraden  ); // aan de pi laten weten hoeveel graden hij is gedraaid
+  if(error){
+    // als error laat hem niks doen
+    return;
+  }
+ stepper1.move( round(inputR * gradenNaarStappen) ); // het draaien van de linker stappenmotor tijdens het draaien
+ stepper2.move( round(inputR * -gradenNaarStappen) ); // het draaien van de rechter stappenmotor tijdens het draaien
+ //nog doorgeven dat het is uitgevoerd
+  return  Serial.println(  round(inputR*gradenNaarStappen) * stappenNaarGraden  ); // aan de pi laten weten hoeveel graden hij is gedraaid
 }
 
-void drive (int afstand){
+void drive (){
  if(error){
   // als error laat hem niks doen
     return;
     
-    stepper1.move( round(afstand / bandRadius * stappenPerRotatie) ); // het draaien van de linker stappenmotor klopt nog niet test
-    stepper2.move( round(afstand / bandRadius * stappenPerRotatie) ); // het draaien van de rechter stappenmotor
+    stepper1.move( round(input * bandRadius) ); // het draaien van de linker stappenmotor klopt nog niet test
+    stepper2.move( round(input * bandradius) ); // het draaien van de rechter stappenmotor
   
 
-    return Serial.println(  round(afstand / bandRadius * stappenPerRotatie)   ); // aan de pi doorgeven hoeveel hij is gereden nog niet af test
+    return Serial.println(  round(input*bandRadius) * stappenNaarGraden  ); // aan de pi doorgeven hoeveel hij is 
   }
-
-
 
 
   return;
 }
-
-
-
-
+  
 
 
 
